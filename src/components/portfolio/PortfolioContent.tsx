@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { ArrowRight, ArrowUpRight, Clock, Layers } from "lucide-react";
+import { ImageWithFallback } from "@/components/ImageWithFallback";
 
 interface CaseStudy {
   title: string;
@@ -113,22 +114,19 @@ export function PortfolioContent({ initialProjects }: { initialProjects: CaseStu
                     href={`/portfolio/${project.slug}`}
                     className="w-full text-left group block no-underline"
                   >
-                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4 bg-og-bg-alt border border-og-border flex items-center justify-center">
+                    <div className="relative aspect-[4/3] rounded-2xl overflow-hidden mb-4">
+                      <ImageWithFallback
+                        src={project.image}
+                        alt={project.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
-                      
-                      {/* Premium card design details */}
-                      <div className="text-center p-4">
-                        <span className="text-[32px] font-mono font-bold text-og-accent block leading-none mb-1">
+                      <div className="absolute top-4 right-4 bg-white/15 backdrop-blur-md rounded-full px-3 py-1.5 border border-white/20">
+                        <span className="text-[14px] text-white font-bold">
                           {project.stat}
                         </span>
-                        <span className="text-[10px] font-mono text-og-text-secondary uppercase tracking-wider block">
+                        <span className="text-[11px] text-white/70 ml-1 font-normal">
                           {project.statLabel}
-                        </span>
-                      </div>
-
-                      <div className="absolute top-4 right-4 bg-white/10 backdrop-blur-md rounded-full px-3 py-1 border border-white/20">
-                        <span className="text-[12px] text-white font-bold">
-                          {project.stat}
                         </span>
                       </div>
                       <div className="absolute bottom-4 right-4 w-8 h-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">

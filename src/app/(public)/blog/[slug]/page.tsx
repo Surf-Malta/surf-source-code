@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { ArrowLeft, ArrowRight, Clock, Calendar } from "lucide-react";
 import { blogPosts } from "@/lib/data/blogPosts";
+import { ImageWithFallback } from "@/components/ImageWithFallback";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -44,8 +45,13 @@ export default async function BlogPostPage({ params }: PageProps) {
   return (
     <div>
       {/* Hero */}
-      <section className="relative h-[280px] md:h-[360px] bg-og-code-bg overflow-hidden flex items-end pb-10">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09090F] via-transparent to-transparent" />
+      <section className="relative h-[300px] md:h-[400px] overflow-hidden flex items-end pb-10">
+        <ImageWithFallback
+          src={post.image}
+          alt={post.title}
+          className="w-full h-full absolute inset-0 object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
         <div className="absolute top-6 left-6">
           <Link
             href="/blog"
@@ -128,8 +134,12 @@ export default async function BlogPostPage({ params }: PageProps) {
                     href={`/blog/${rp.slug}`}
                     className="group no-underline block"
                   >
-                    <div className="relative aspect-[16/10] rounded-xl overflow-hidden mb-3 bg-og-bg-alt flex items-center justify-center border border-og-border font-mono text-[11px] text-og-text-secondary">
-                      <span>[ {rp.category} Image ]</span>
+                    <div className="relative aspect-[16/10] rounded-xl overflow-hidden mb-3">
+                      <ImageWithFallback
+                        src={rp.image}
+                        alt={rp.title}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
                     </div>
                     <p className="text-[12px] text-og-text-secondary mb-1 font-normal">
                       {rp.date} · {rp.readTime}

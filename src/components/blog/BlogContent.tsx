@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { Clock, ArrowRight, Search } from "lucide-react";
+import { ImageWithFallback } from "@/components/ImageWithFallback";
 
 interface BlogPost {
   title: string;
@@ -70,9 +71,12 @@ export function BlogContent({ initialPosts }: { initialPosts: BlogPost[] }) {
             <AnimatedSection delay={0.1}>
               <Link href={`/blog/${featuredPost.slug}`} className="group block no-underline">
                 <div className="grid md:grid-cols-2 gap-6 bg-og-surface rounded-2xl border border-og-border overflow-hidden md:max-h-[360px]">
-                  <div className="relative aspect-[16/10] md:aspect-auto md:h-[360px] bg-og-bg-alt flex items-center justify-center font-mono text-og-text-secondary text-[12px]">
-                    {/* Compact layout */}
-                    <span>[ {featuredPost.category} Image ]</span>
+                  <div className="relative aspect-[16/10] md:aspect-auto md:h-[360px] overflow-hidden">
+                    <ImageWithFallback
+                      src={featuredPost.image}
+                      alt={featuredPost.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
                   </div>
                   <div className="p-6 md:p-8 flex flex-col justify-center md:h-full min-h-0 overflow-hidden">
                     <span className="inline-block px-3 py-1 rounded-full bg-[var(--og-accent-muted)] text-og-accent text-[12px] w-fit mb-3 font-medium">
@@ -146,8 +150,12 @@ export function BlogContent({ initialPosts }: { initialPosts: BlogPost[] }) {
                   transition={{ duration: 0.3, delay: i * 0.05 }}
                 >
                   <Link href={`/blog/${post.slug}`} className="group block no-underline">
-                    <div className="relative aspect-[16/10] rounded-2xl overflow-hidden mb-4 bg-og-bg-alt flex items-center justify-center border border-og-border text-og-text-secondary font-mono text-[11px]">
-                      <span>[ {post.category} Image ]</span>
+                    <div className="relative aspect-[16/10] rounded-2xl overflow-hidden mb-4">
+                      <ImageWithFallback
+                        src={post.image}
+                        alt={post.title}
+                        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                      />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
                       <div className="absolute top-4 left-4">
                         <span className="px-3 py-1 rounded-full bg-white/10 backdrop-blur-md text-[11px] text-white border border-white/20 font-medium">

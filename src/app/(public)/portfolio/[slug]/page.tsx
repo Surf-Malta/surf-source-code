@@ -3,6 +3,7 @@ import Link from "next/link";
 import { AnimatedSection } from "@/components/AnimatedSection";
 import { ArrowLeft, ArrowRight, Clock, Layers, TrendingUp, Check, Quote } from "lucide-react";
 import { caseStudies } from "@/lib/data/caseStudies";
+import { ImageWithFallback } from "@/components/ImageWithFallback";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -39,8 +40,13 @@ export default async function CaseStudyDetailPage({ params }: PageProps) {
   return (
     <div>
       {/* Hero */}
-      <section className="relative h-[280px] md:h-[360px] bg-og-code-bg overflow-hidden flex items-end pb-10">
-        <div className="absolute inset-0 bg-gradient-to-t from-[#09090F] via-transparent to-transparent" />
+      <section className="relative h-[340px] md:h-[420px] overflow-hidden flex items-end pb-10">
+        <ImageWithFallback
+          src={project.image}
+          alt={project.title}
+          className="w-full h-full absolute inset-0 object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
         <div className="absolute top-6 left-6">
           <Link
             href="/portfolio"
@@ -177,10 +183,7 @@ export default async function CaseStudyDetailPage({ params }: PageProps) {
                   </div>
                   <div>
                     <p className="text-[15px] text-og-text font-semibold">
-                      {project.testimonial.name
-                        .split(" ")
-                        .map((n: string) => n[0])
-                        .join("")}
+                      {project.testimonial.name}
                     </p>
                     <p className="text-[13px] text-og-text-secondary font-normal">
                       {project.testimonial.role}
