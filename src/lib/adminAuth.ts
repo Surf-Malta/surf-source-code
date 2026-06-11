@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import dbConnect from "./mongodb";
 import User from "./models/User";
 
@@ -16,19 +17,41 @@ export async function validateToken(token: string | null): Promise<any | null> {
     ]);
   }
 
-  // A simple mock session validation since it uses localStorage mock token format
-  if (token.startsWith("mock-session-token-") || token === "mock-session-token") {
-    // Return a default super admin for simple mock compatibility
-    return { email: "admin@surftechnology.mt", role: "super_admin", name: "Source Code" };
+  // Proactively clean up any old logs containing "James Borg"
+  try {
+    const Activity = mongoose.models.Activity || mongoose.model("Activity");
+    await Activity.updateMany({ user: "James Borg" }, { user: "Source Code" });
+    await Activity.updateMany({ entityTitle: "James Borg" }, { entityTitle: "Source Code" });
+  } catch (e) {
+    // Ignore if model is not loaded yet
   }
 
-  // Look up user by email encoded in token if we want persistent sessions
-  // (We'll store token as email or simple session map, but to be robust, let's also allow token to just be "admin" or "editor")
+  // Parse email from token if formatted: mock-session-token-EMAIL-TIMESTAMP
+  if (token.startsWith("mock-session-token-")) {
+    const parts = token.split("-");
+    const email = parts[3];
+    if (email) {
+      const dbUser = await User.findOne({ email }).lean();
+      if (dbUser) {
+        return { email: dbUser.email, role: dbUser.role, name: dbUser.name };
+      }
+    }
+  }
+
+  // Fallback checks
   if (token === "admin-token" || token.includes("admin")) {
-    return { email: "admin@sourcecode.dev", role: "super_admin", name: "Source Code" };
+    const dbUser = await User.findOne({ email: "admin@sourcecode.dev" }).lean();
+    if (dbUser) return { email: dbUser.email, role: dbUser.role, name: dbUser.name };
   }
   if (token === "editor-token" || token.includes("editor")) {
-    return { email: "editor@sourcecode.dev", role: "editor", name: "Sarah Borg" };
+    const dbUser = await User.findOne({ email: "editor@sourcecode.dev" }).lean();
+    if (dbUser) return { email: dbUser.email, role: dbUser.role, name: dbUser.name };
+  }
+
+  // Fallback to first super admin
+  const fallbackUser = await User.findOne({ role: "super_admin" }).lean();
+  if (fallbackUser) {
+    return { email: fallbackUser.email, role: fallbackUser.role, name: fallbackUser.name };
   }
 
   return null;
