@@ -20,7 +20,7 @@ export const blogPosts: BlogPost[] = [
     category: "AI & Automation",
     image:
       "https://images.unsplash.com/photo-1749006590639-e749e6b7d84c?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxhcnRpZmljaWFsJTIwaW50ZWxsaWdlbmNlJTIwdGVjaG5vbG9neSUyMGFic3RyYWN0fGVufDF8fHx8MTc3MjMyMDIxNnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    author: "James Borg",
+    author: "Source Code",
     authorRole: "CTO, Surf Technology",
     date: "Feb 24, 2026",
     readTime: "7 min read",
@@ -63,7 +63,7 @@ export const blogPosts: BlogPost[] = [
     category: "Case Study",
     image:
       "https://images.unsplash.com/photo-1759752393975-7ca7b302fcc6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxidXNpbmVzcyUyMGF1dG9tYXRpb24lMjB3b3JrZmxvdyUyMGRpZ2l0YWx8ZW58MXx8fHwxNzcyMzY0NDcxfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    author: "James Borg",
+    author: "Source Code",
     authorRole: "CTO, Surf Technology",
     date: "Feb 10, 2026",
     readTime: "5 min read",
@@ -105,7 +105,7 @@ export const blogPosts: BlogPost[] = [
     category: "E-Commerce",
     image:
       "https://images.unsplash.com/photo-1726056652752-58303aafa0c1?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxlY29tbWVyY2UlMjBkaWdpdGFsJTIwdHJhbnNmb3JtYXRpb24lMjBncm93dGh8ZW58MXx8fHwxNzcyMzY0NDcyfDA&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    author: "James Borg",
+    author: "Source Code",
     authorRole: "CTO, Surf Technology",
     date: "Jan 27, 2026",
     readTime: "8 min read",
@@ -126,7 +126,7 @@ export const blogPosts: BlogPost[] = [
     category: "Strategy",
     image:
       "https://images.unsplash.com/photo-1737575291989-0882b03f97b6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdGFydHVwJTIwdGVjaG5vbG9neSUyMHRlYW0lMjBjb2xsYWJvcmF0aW9ufGVufDF8fHx8MTc3MjM2NDQ3Mnww&ixlib=rb-4.1.0&q=80&w=1080&utm_source=figma&utm_medium=referral",
-    author: "James Borg",
+    author: "Source Code",
     authorRole: "CTO, Surf Technology",
     date: "Jan 20, 2026",
     readTime: "5 min read",

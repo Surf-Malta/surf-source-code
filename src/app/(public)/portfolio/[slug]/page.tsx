@@ -4,12 +4,25 @@ import { AnimatedSection } from "@/components/AnimatedSection";
 import { ArrowLeft, ArrowRight, Clock, Layers, TrendingUp, Check, Quote } from "lucide-react";
 import { caseStudies } from "@/lib/data/caseStudies";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
+import dbConnect from "@/lib/mongodb";
+import Portfolio from "@/lib/models/Portfolio";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
+  try {
+    await dbConnect();
+    const dbProjects = await Portfolio.find({ status: "published" }).select("slug").lean();
+    if (dbProjects && dbProjects.length > 0) {
+      return dbProjects.map((project: any) => ({
+        slug: project.slug,
+      }));
+    }
+  } catch (err) {
+    console.error("generateStaticParams MongoDB fetch failed:", err);
+  }
   return caseStudies.map((project) => ({
     slug: project.slug,
   }));
@@ -17,7 +30,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const project = caseStudies.find((p) => p.slug === slug);
+  let project = null;
+  try {
+    await dbConnect();
+    project = await Portfolio.findOne({ slug }).lean();
+  } catch {}
+  if (!project) {
+    project = caseStudies.find((p) => p.slug === slug);
+  }
 
   return {
     title: project ? `${project.title} | Sourcecode Case Study` : "Case Study | Sourcecode",
@@ -27,15 +47,49 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function CaseStudyDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const project = caseStudies.find((p) => p.slug === slug);
+  let project = null;
+  let allProjects = caseStudies;
+
+  try {
+    await dbConnect();
+    const dbProjects = await Portfolio.find({ status: "published" }).sort({ order: 1 }).lean();
+    if (dbProjects && dbProjects.length > 0) {
+      allProjects = dbProjects.map((doc: any) => ({
+        title: doc.title,
+        slug: doc.slug,
+        client: doc.client || "",
+        category: doc.category || "",
+        industry: doc.industry || "",
+        tagline: doc.tagline || "",
+        image: doc.image || "",
+        stat: doc.stat || "",
+        statLabel: doc.statLabel || "",
+        duration: doc.duration || "",
+        techStack: doc.techStack || [],
+        challenge: doc.challenge || "",
+        solution: doc.solution || "",
+        results: doc.results || [],
+        testimonial: doc.testimonial || undefined,
+        featured: doc.featured || false,
+        order: doc.order || 0,
+      }));
+      project = allProjects.find((p) => p.slug === slug);
+    }
+  } catch (err) {
+    console.error("MongoDB fetch failed for portfolio item, using static fallback:", err);
+  }
+
+  if (!project) {
+    project = caseStudies.find((p) => p.slug === slug);
+  }
 
   if (!project) {
     redirect("/portfolio");
   }
 
-  const currentIndex = caseStudies.findIndex((cs) => cs.slug === slug);
-  const nextProject = caseStudies[(currentIndex + 1) % caseStudies.length];
-  const prevProject = caseStudies[(currentIndex - 1 + caseStudies.length) % caseStudies.length];
+  const currentIndex = allProjects.findIndex((cs) => cs.slug === slug);
+  const nextProject = allProjects[(currentIndex + 1) % allProjects.length];
+  const prevProject = allProjects[(currentIndex - 1 + allProjects.length) % allProjects.length];
 
   return (
     <div>

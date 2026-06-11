@@ -4,12 +4,25 @@ import { AnimatedSection } from "@/components/AnimatedSection";
 import { ArrowLeft, ArrowRight, Clock, Calendar } from "lucide-react";
 import { blogPosts } from "@/lib/data/blogPosts";
 import { ImageWithFallback } from "@/components/ImageWithFallback";
+import dbConnect from "@/lib/mongodb";
+import Blog from "@/lib/models/Blog";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
 export async function generateStaticParams() {
+  try {
+    await dbConnect();
+    const dbPosts = await Blog.find({ status: "published" }).select("slug").lean();
+    if (dbPosts && dbPosts.length > 0) {
+      return dbPosts.map((post: any) => ({
+        slug: post.slug,
+      }));
+    }
+  } catch (err) {
+    console.error("generateStaticParams MongoDB fetch failed:", err);
+  }
   return blogPosts.map((post) => ({
     slug: post.slug,
   }));
@@ -17,7 +30,14 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps) {
   const { slug } = await params;
-  const post = blogPosts.find((p) => p.slug === slug);
+  let post = null;
+  try {
+    await dbConnect();
+    post = await Blog.findOne({ slug }).lean();
+  } catch {}
+  if (!post) {
+    post = blogPosts.find((p) => p.slug === slug);
+  }
 
   return {
     title: post ? `${post.title} | Sourcecode Blog` : "Blog | Sourcecode",
@@ -27,18 +47,45 @@ export async function generateMetadata({ params }: PageProps) {
 
 export default async function BlogPostPage({ params }: PageProps) {
   const { slug } = await params;
-  const post = blogPosts.find((p) => p.slug === slug);
+  let post = null;
+  let allPosts = blogPosts;
+
+  try {
+    await dbConnect();
+    const dbPosts = await Blog.find({ status: "published" }).sort({ date: -1 }).lean();
+    if (dbPosts && dbPosts.length > 0) {
+      allPosts = dbPosts.map((doc: any) => ({
+        title: doc.title,
+        slug: doc.slug,
+        excerpt: doc.excerpt || "",
+        category: doc.category || "General",
+        image: doc.image || "",
+        author: doc.author || "Admin",
+        authorRole: doc.authorRole || "",
+        date: doc.date || "",
+        readTime: doc.readTime || "",
+        content: doc.content || [],
+      }));
+      post = allPosts.find((p) => p.slug === slug);
+    }
+  } catch (err) {
+    console.error("MongoDB fetch failed for blog post, using static fallback:", err);
+  }
+
+  if (!post) {
+    post = blogPosts.find((p) => p.slug === slug);
+  }
 
   if (!post) {
     redirect("/blog");
   }
 
-  const currentIndex = blogPosts.findIndex((p) => p.slug === slug);
-  const nextPost = blogPosts[(currentIndex + 1) % blogPosts.length];
-  const prevPost = blogPosts[(currentIndex - 1 + blogPosts.length) % blogPosts.length];
+  const currentIndex = allPosts.findIndex((p) => p.slug === slug);
+  const nextPost = allPosts[(currentIndex + 1) % allPosts.length];
+  const prevPost = allPosts[(currentIndex - 1 + allPosts.length) % allPosts.length];
 
   // Related posts
-  const related = blogPosts
+  const related = allPosts
     .filter((p) => p.category === post.category && p.slug !== post.slug)
     .slice(0, 2);
 

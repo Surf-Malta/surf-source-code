@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Lock, Mail, Loader2, ArrowRight } from "lucide-react";
 
+import { login } from "@/lib/data/adminApi";
+
 export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -17,15 +19,11 @@ export default function AdminLoginPage() {
     setError("");
     setLoading(true);
 
-    // Simulated login matching DEMO_USERS
-    if (
-      (email === "admin@surftechnology.mt" && password === "admin123") ||
-      (email === "editor@surftechnology.mt" && password === "editor123")
-    ) {
-      localStorage.setItem("admin_token", "mock-session-token-" + Date.now());
+    try {
+      await login(email, password);
       router.push("/admin");
-    } else {
-      setError("Invalid email or password");
+    } catch (err: any) {
+      setError(err.message || "Invalid email or password");
       setLoading(false);
     }
   };

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
+import { getBlogs, getPortfolio, getFAQs, getServices, getActivity, getRequests } from "@/lib/data/adminApi";
 import {
   FileText,
   Briefcase,
@@ -16,6 +17,7 @@ import {
   CheckCircle2,
   FileEdit,
   Loader2,
+  Mail,
 } from "lucide-react";
 
 function StatCard({
@@ -111,38 +113,35 @@ function timeAgo(ts: string): string {
   return `${days}d ago`;
 }
 
+
 export default function DashboardPage() {
   const [blogs, setBlogs] = useState<any[]>([]);
   const [portfolio, setPortfolio] = useState<any[]>([]);
   const [faqs, setFaqs] = useState<any[]>([]);
   const [services, setServices] = useState<any[]>([]);
   const [activity, setActivity] = useState<any[]>([]);
+  const [requests, setRequests] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulated fetching of admin statistics
-    setTimeout(() => {
-      setBlogs([
-        { title: "AI in Malta", status: "published" },
-        { title: "Next.js vs React", status: "draft" }
-      ]);
-      setPortfolio([
-        { title: "Hotel Booking", status: "published" },
-        { title: "E-learning Platform", status: "published" }
-      ]);
-      setFaqs([
-        { question: "What is Sourcecode?", active: true }
-      ]);
-      setServices([
-        { title: "Custom Software" }
-      ]);
-      setActivity([
-        { id: "act-1", action: "Logged In", entity: "Auth", entityTitle: "James Borg", timestamp: new Date().toISOString() },
-        { id: "act-2", action: "Created", entity: "Blog", entityTitle: "AI in Malta", timestamp: new Date(Date.now() - 3600000).toISOString() }
-      ]);
+    Promise.all([
+      getBlogs().catch(() => []),
+      getPortfolio().catch(() => []),
+      getFAQs().catch(() => []),
+      getServices().catch(() => []),
+      getActivity().catch(() => []),
+      getRequests().catch(() => []),
+    ]).then(([b, p, f, s, a, r]) => {
+      setBlogs(b);
+      setPortfolio(p);
+      setFaqs(f);
+      setServices(s);
+      setActivity(a);
+      setRequests(r);
       setLoading(false);
-    }, 400);
+    });
   }, []);
+
 
   if (loading) {
     return (
@@ -174,7 +173,15 @@ export default function DashboardPage() {
       </motion.div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
+        <StatCard
+          label="Project Requests"
+          value={requests.length}
+          icon={Mail}
+          color="#EC4899"
+          sub={`${requests.length} total inquiries`}
+          delay={0.03}
+        />
         <StatCard
           label="Blog Posts"
           value={blogs.length}
@@ -207,6 +214,7 @@ export default function DashboardPage() {
           delay={0.2}
         />
       </div>
+
 
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Quick actions */}

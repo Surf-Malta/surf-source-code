@@ -18,17 +18,15 @@ import {
   ChevronRight,
   Globe,
   Loader2,
+  Mail,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface AdminUser {
-  email: string;
-  role: string;
-  name: string;
-}
+import { getAuthUser, logout, AdminUser } from "@/lib/data/adminApi";
 
 const navItems = [
   { path: "/admin", label: "Dashboard", icon: LayoutDashboard },
+  { path: "/admin/requests", label: "Requests", icon: Mail },
   { path: "/admin/portfolio", label: "Portfolio", icon: Briefcase },
   { path: "/admin/blog", label: "Blog", icon: FileText },
   { path: "/admin/faq", label: "FAQ", icon: HelpCircle },
@@ -46,18 +44,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
 
   useEffect(() => {
-    // Check if token exists in localStorage
     const token = localStorage.getItem("admin_token");
     if (!token && pathname !== "/admin/login") {
       router.push("/admin/login");
+    } else if (token) {
+      getAuthUser()
+        .then((userData) => {
+          if (userData) {
+            setUser(userData as any);
+          } else if (pathname !== "/admin/login") {
+            router.push("/admin/login");
+          }
+          setLoading(false);
+        })
+        .catch(() => {
+          if (pathname !== "/admin/login") {
+            router.push("/admin/login");
+          }
+          setLoading(false);
+        });
     } else {
-      // Mock validation success (or call API if integrated)
-      setUser({ email: "admin@surftechnology.mt", role: "super_admin", name: "James Borg" });
       setLoading(false);
     }
   }, [pathname, router]);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (err) {
+      console.error("Logout API error:", err);
+    }
     localStorage.removeItem("admin_token");
     router.push("/admin/login");
   };
