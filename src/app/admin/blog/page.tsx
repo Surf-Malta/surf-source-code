@@ -111,7 +111,7 @@ export default function BlogManagerPage() {
         </div>
       </div>
 
-      <div className="bg-og-surface rounded-xl border border-og-border overflow-hidden">
+      <div className="bg-og-surface rounded-xl border border-og-border">
         {loading ? (
           <div className="p-12 text-center">
             <Loader2 size={24} className="animate-spin text-og-accent mx-auto" />
@@ -122,7 +122,7 @@ export default function BlogManagerPage() {
             <div className="text-[14px] text-og-text-secondary font-medium">No posts found</div>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto md:overflow-x-visible">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-og-border">

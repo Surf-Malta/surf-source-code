@@ -1,3 +1,4 @@
+// Next.js Admin API Route Handler
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Blog from "@/lib/models/Blog";
@@ -15,6 +16,7 @@ function formatDoc(doc: any) {
   if (!doc) return null;
   const obj = typeof doc.toObject === "function" ? doc.toObject() : doc;
   obj.id = obj._id ? obj._id.toString() : obj.id;
+  delete obj._id;
   return obj;
 }
 
@@ -94,6 +96,11 @@ export async function GET(request: Request, props: { params: Promise<{ route?: s
         const service = await Service.findById(id);
         if (!service) return NextResponse.json({ error: "Not found" }, { status: 404 });
         return NextResponse.json({ data: formatDoc(service) });
+      }
+      if (endpoint === "media") {
+        const media = await Media.findById(id);
+        if (!media) return NextResponse.json({ error: "Not found" }, { status: 404 });
+        return NextResponse.json({ data: formatDoc(media) });
       }
     }
 
@@ -218,6 +225,17 @@ export async function POST(request: Request, props: { params: Promise<{ route?: 
           user: user.name,
         });
         return NextResponse.json({ data: formatDoc(mediaItem) });
+      }
+      if (endpoint === "requests") {
+        const submission = await ProjectSubmission.create(body);
+        await Activity.create({
+          action: "Created",
+          entity: "ProjectSubmission",
+          entityId: submission._id.toString(),
+          entityTitle: submission.companyName || "New Request",
+          user: "Public",
+        });
+        return NextResponse.json({ data: formatDoc(submission) });
       }
     } else if (route.length === 3) {
       const endpoint = route[0];
@@ -371,6 +389,23 @@ export async function PUT(request: Request, props: { params: Promise<{ route?: s
         });
         return NextResponse.json({ success: true });
       }
+
+      if (endpoint === "services-reorder") {
+        const items = body.items || [];
+        for (const item of items) {
+          const targetId = item.id || item._id;
+          if (targetId) {
+            await Service.findByIdAndUpdate(targetId, { order: item.order });
+          }
+        }
+        await Activity.create({
+          action: "Updated",
+          entity: "Service",
+          entityTitle: "Services Reorder",
+          user: user.name,
+        });
+        return NextResponse.json({ success: true });
+      }
     } else if (route.length === 2) {
       const endpoint = route[0];
       const id = route[1];
@@ -409,6 +444,19 @@ export async function PUT(request: Request, props: { params: Promise<{ route?: s
           entity: "FAQ",
           entityId: updated._id.toString(),
           entityTitle: updated.question,
+          user: user.name,
+        });
+        return NextResponse.json({ data: formatDoc(updated) });
+      }
+
+      if (endpoint === "media") {
+        const updated = await Media.findByIdAndUpdate(id, body, { new: true });
+        if (!updated) return NextResponse.json({ error: "Media not found" }, { status: 404 });
+        await Activity.create({
+          action: "Updated",
+          entity: "Media",
+          entityId: updated._id.toString(),
+          entityTitle: updated.name,
           user: user.name,
         });
         return NextResponse.json({ data: formatDoc(updated) });

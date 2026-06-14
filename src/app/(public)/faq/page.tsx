@@ -1,6 +1,5 @@
 import { FAQContent } from "@/components/faq/FAQContent";
-import dbConnect from "@/lib/mongodb";
-import FAQ from "@/lib/models/FAQ";
+import { fetchActiveFAQs } from "@/lib/data/publicData";
 
 const staticFaqs = [
   { question: "What services does Sourcecode offer?", answer: "We provide custom software development, AI & automation solutions, web design & development, business intelligence systems, and workflow engineering. From MVPs to enterprise platforms, we build what your business needs.", category: "General" },
@@ -25,17 +24,12 @@ export const metadata = {
 export default async function FAQPage() {
   let faqs = staticFaqs;
   try {
-    await dbConnect();
-    const dbFaqs = await FAQ.find({ active: true }).sort({ order: 1 }).lean();
+    const dbFaqs = await fetchActiveFAQs();
     if (dbFaqs && dbFaqs.length > 0) {
-      faqs = dbFaqs.map((doc: any) => ({
-        question: doc.question,
-        answer: doc.answer,
-        category: doc.category || "General",
-      }));
+      faqs = dbFaqs;
     }
   } catch (err) {
-    console.error("MongoDB fetch failed for FAQs, using static fallback:", err);
+    console.error("Error loading FAQs:", err);
   }
 
   return <FAQContent initialFaqs={faqs} />;

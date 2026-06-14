@@ -1,7 +1,6 @@
 import { BlogContent } from "@/components/blog/BlogContent";
 import { blogPosts as staticBlogPosts } from "@/lib/data/blogPosts";
-import dbConnect from "@/lib/mongodb";
-import Blog from "@/lib/models/Blog";
+import { fetchPublishedBlogs } from "@/lib/data/publicData";
 
 export const metadata = {
   title: "Blog | Sourcecode",
@@ -11,24 +10,12 @@ export const metadata = {
 export default async function BlogPage() {
   let posts = staticBlogPosts;
   try {
-    await dbConnect();
-    const dbPosts = await Blog.find({ status: "published" }).sort({ date: -1 }).lean();
+    const dbPosts = await fetchPublishedBlogs();
     if (dbPosts && dbPosts.length > 0) {
-      posts = dbPosts.map((doc: any) => ({
-        title: doc.title,
-        slug: doc.slug,
-        excerpt: doc.excerpt || "",
-        category: doc.category || "General",
-        image: doc.image || "",
-        author: doc.author || "Admin",
-        authorRole: doc.authorRole || "",
-        date: doc.date || "",
-        readTime: doc.readTime || "",
-        content: doc.content || [],
-      }));
+      posts = dbPosts;
     }
   } catch (err) {
-    console.error("MongoDB fetch failed for blogs, using static fallback:", err);
+    console.error("Error loading blogs:", err);
   }
 
   return <BlogContent initialPosts={posts} />;

@@ -191,8 +191,13 @@ export async function logout(): Promise<void> {
    ═══════════════════════════════════ */
 
 export async function getBlogs(): Promise<any[]> {
-  const { data } = await apiFetch<{ data: any[] }>("/blogs");
-  return data;
+  try {
+    const { data } = await apiFetch<{ data: any[] }>("/blogs");
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching blogs:", err);
+    return [];
+  }
 }
 
 export async function getBlog(id: string): Promise<any | undefined> {
@@ -234,8 +239,13 @@ export async function duplicateBlog(id: string): Promise<any> {
    ═══════════════════════════════════ */
 
 export async function getPortfolio(): Promise<any[]> {
-  const { data } = await apiFetch<{ data: any[] }>("/portfolio");
-  return data;
+  try {
+    const { data } = await apiFetch<{ data: any[] }>("/portfolio");
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching portfolio:", err);
+    return [];
+  }
 }
 
 export async function getPortfolioItem(id: string): Promise<any | undefined> {
@@ -281,8 +291,22 @@ export async function reorderPortfolio(items: any[]): Promise<void> {
    ═══════════════════════════════════ */
 
 export async function getFAQs(): Promise<any[]> {
-  const { data } = await apiFetch<{ data: any[] }>("/faqs");
-  return data;
+  try {
+    const { data } = await apiFetch<{ data: any[] }>("/faqs");
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching FAQs:", err);
+    return [];
+  }
+}
+
+export async function getFAQ(id: string): Promise<any | undefined> {
+  try {
+    const { data } = await apiFetch<{ data: any }>(`/faqs/${id}`);
+    return data;
+  } catch {
+    return undefined;
+  }
 }
 
 export async function saveFAQ(faq: any): Promise<any> {
@@ -314,8 +338,22 @@ export async function reorderFAQs(items: any[]): Promise<void> {
    ═══════════════════════════════════ */
 
 export async function getServices(): Promise<any[]> {
-  const { data } = await apiFetch<{ data: any[] }>("/services");
-  return data;
+  try {
+    const { data } = await apiFetch<{ data: any[] }>("/services");
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching services:", err);
+    return [];
+  }
+}
+
+export async function getService(id: string): Promise<any | undefined> {
+  try {
+    const { data } = await apiFetch<{ data: any }>(`/services/${id}`);
+    return data;
+  } catch {
+    return undefined;
+  }
 }
 
 export async function saveService(service: any): Promise<any> {
@@ -338,13 +376,22 @@ export async function deleteService(id: string): Promise<void> {
   await apiFetch(`/services/${id}`, { method: "DELETE" });
 }
 
+export async function reorderServices(items: any[]): Promise<void> {
+  await apiFetch("/services-reorder", { method: "PUT", body: JSON.stringify({ items }) });
+}
+
 /* ═══════════════════════════════════
    HOMEPAGE
    ═══════════════════════════════════ */
 
 export async function getHomepage(): Promise<any> {
-  const { data } = await apiFetch<{ data: any }>("/homepage");
-  return data;
+  try {
+    const { data } = await apiFetch<{ data: any }>("/homepage");
+    return data;
+  } catch (err) {
+    console.error("Error fetching homepage:", err);
+    return {};
+  }
 }
 
 export async function saveHomepage(data: any): Promise<void> {
@@ -356,8 +403,13 @@ export async function saveHomepage(data: any): Promise<void> {
    ═══════════════════════════════════ */
 
 export async function getActivity(): Promise<any[]> {
-  const { data } = await apiFetch<{ data: any[] }>("/activity");
-  return data;
+  try {
+    const { data } = await apiFetch<{ data: any[] }>("/activity");
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching activity:", err);
+    return [];
+  }
 }
 
 /* ═══════════════════════════════════
@@ -365,8 +417,13 @@ export async function getActivity(): Promise<any[]> {
    ═══════════════════════════════════ */
 
 export async function getMedia(): Promise<any[]> {
-  const { data } = await apiFetch<{ data: any[] }>("/media");
-  return data;
+  try {
+    const { data } = await apiFetch<{ data: any[] }>("/media");
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching media:", err);
+    return [];
+  }
 }
 
 export async function addMedia(item: { url: string; name: string; size?: string; type?: string }): Promise<any> {
@@ -386,8 +443,13 @@ export async function deleteMedia(id: string): Promise<void> {
    ═══════════════════════════════════ */
 
 export async function getRequests(): Promise<any[]> {
-  const { data } = await apiFetch<{ data: any[] }>("/requests");
-  return data;
+  try {
+    const { data } = await apiFetch<{ data: any[] }>("/requests");
+    return data || [];
+  } catch (err) {
+    console.error("Error fetching requests:", err);
+    return [];
+  }
 }
 
 export async function deleteRequest(id: string): Promise<void> {

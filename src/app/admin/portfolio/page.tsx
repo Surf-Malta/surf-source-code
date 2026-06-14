@@ -70,7 +70,7 @@ export default function PortfolioManagerPage() {
         </div>
       </div>
 
-      <div className="bg-og-surface rounded-xl border border-og-border overflow-hidden">
+      <div className="bg-og-surface rounded-xl border border-og-border">
         {loading ? (
           <div className="p-12 text-center"><Loader2 size={24} className="animate-spin text-og-accent mx-auto" /></div>
         ) : filtered.length === 0 ? (
