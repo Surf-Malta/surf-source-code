@@ -94,13 +94,6 @@ export default function PortfolioEditorPage({ params }: { params: Promise<{ id: 
     router.push("/admin/portfolio");
   };
 
-  const InputField = ({ label, value, field, placeholder }: { label: string; value: string; field: string; placeholder?: string }) => (
-    <div>
-      <label className="block text-[11px] text-og-text-secondary mb-1 font-medium">{label}</label>
-      <input type="text" value={value} onChange={(e) => updateField(field, e.target.value)} placeholder={placeholder} className="w-full h-9 px-3 rounded-lg bg-og-surface-hover border border-og-border text-[13px] text-og-text outline-none focus:border-og-accent/30 font-normal" />
-    </div>
-  );
-
   return (
     <div className="max-w-[900px] mx-auto">
       <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between mb-6">
@@ -119,24 +112,24 @@ export default function PortfolioEditorPage({ params }: { params: Promise<{ id: 
       <div className="grid lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-og-surface rounded-xl p-5 border border-og-border">
-            <InputField label="Project Title" value={form.title} field="title" placeholder="e.g. Malta Grand Hotel" />
+            <InputField label="Project Title" value={form.title} onChange={(val) => updateField("title", val)} placeholder="e.g. Malta Grand Hotel" />
             <div className="mt-2 text-[11px] text-og-text-secondary/60">Slug: <span className="text-og-accent">/portfolio/{form.slug || "..."}</span></div>
           </div>
 
           <div className="bg-og-surface rounded-xl p-5 border border-og-border space-y-3">
             <div className="grid grid-cols-2 gap-3">
-              <InputField label="Client Name" value={form.client} field="client" />
+              <InputField label="Client Name" value={form.client} onChange={(val) => updateField("client", val)} />
               <div>
                 <label className="block text-[11px] text-og-text-secondary mb-1 font-medium">Industry</label>
                 <select value={form.industry} onChange={(e) => updateField("industry", e.target.value)} className="w-full h-9 px-3 rounded-lg bg-og-surface-hover border border-og-border text-[13px] text-og-text outline-none font-normal">{industryOptions.map((i) => <option key={i}>{i}</option>)}</select>
               </div>
             </div>
-            <InputField label="Category" value={form.category} field="category" placeholder="e.g. Web & Custom Software" />
-            <InputField label="Tagline" value={form.tagline} field="tagline" placeholder="One-line summary" />
+            <InputField label="Category" value={form.category} onChange={(val) => updateField("category", val)} placeholder="e.g. Web & Custom Software" />
+            <InputField label="Tagline" value={form.tagline} onChange={(val) => updateField("tagline", val)} placeholder="One-line summary" />
             <div className="grid grid-cols-3 gap-3">
-              <InputField label="Key Stat" value={form.stat} field="stat" placeholder="+68%" />
-              <InputField label="Stat Label" value={form.statLabel} field="statLabel" placeholder="Online bookings" />
-              <InputField label="Duration" value={form.duration} field="duration" placeholder="10 weeks" />
+              <InputField label="Key Stat" value={form.stat} onChange={(val) => updateField("stat", val)} placeholder="+68%" />
+              <InputField label="Stat Label" value={form.statLabel} onChange={(val) => updateField("statLabel", val)} placeholder="Online bookings" />
+              <InputField label="Duration" value={form.duration} onChange={(val) => updateField("duration", val)} placeholder="10 weeks" />
             </div>
           </div>
 
@@ -159,7 +152,7 @@ export default function PortfolioEditorPage({ params }: { params: Promise<{ id: 
           <div className="bg-og-surface rounded-xl p-5 border border-og-border space-y-3">
             <label className="block text-[12px] text-og-text-secondary font-semibold">Testimonial (optional)</label>
             <textarea value={form.testimonialQuote} onChange={(e) => updateField("testimonialQuote", e.target.value)} rows={2} placeholder="Client quote..." className="w-full px-3 py-2 rounded-lg bg-og-surface-hover border border-og-border text-[13px] outline-none resize-none font-normal" />
-            <div className="grid grid-cols-2 gap-3"><InputField label="Name" value={form.testimonialName} field="testimonialName" /><InputField label="Role" value={form.testimonialRole} field="testimonialRole" /></div>
+            <div className="grid grid-cols-2 gap-3"><InputField label="Name" value={form.testimonialName} onChange={(val) => updateField("testimonialName", val)} /><InputField label="Role" value={form.testimonialRole} onChange={(val) => updateField("testimonialRole", val)} /></div>
           </div>
         </div>
 
@@ -192,11 +185,33 @@ export default function PortfolioEditorPage({ params }: { params: Promise<{ id: 
 
           <div className="bg-og-surface rounded-xl p-5 border border-og-border space-y-3">
             <div className="flex items-center gap-2 mb-1"><SearchIcon size={13} className="text-og-text-secondary" /><span className="text-[12px] text-og-text-secondary font-semibold">SEO Settings</span></div>
-            <InputField label="SEO Title" value={form.seoTitle} field="seoTitle" />
+            <InputField label="SEO Title" value={form.seoTitle} onChange={(val) => updateField("seoTitle", val)} />
             <div><label className="block text-[11px] text-og-text-secondary mb-1 font-medium">SEO Description</label><textarea value={form.seoDescription} onChange={(e) => updateField("seoDescription", e.target.value)} rows={2} className="w-full px-3 py-2 rounded-lg bg-og-surface-hover border border-og-border text-[11px] outline-none resize-none font-normal" /></div>
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+interface InputFieldProps {
+  label: string;
+  value: string;
+  onChange: (val: string) => void;
+  placeholder?: string;
+}
+
+function InputField({ label, value, onChange, placeholder }: InputFieldProps) {
+  return (
+    <div>
+      <label className="block text-[11px] text-og-text-secondary mb-1 font-medium">{label}</label>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full h-9 px-3 rounded-lg bg-og-surface-hover border border-og-border text-[13px] text-og-text outline-none focus:border-og-accent/30 font-normal"
+      />
     </div>
   );
 }
