@@ -35,6 +35,10 @@ const ProjectSubmissionSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    read: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

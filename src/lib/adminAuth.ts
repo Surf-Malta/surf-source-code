@@ -10,9 +10,8 @@ export async function validateToken(token: string | null): Promise<any | null> {
   const count = await User.countDocuments();
   if (count === 0) {
     await User.create([
-      { email: "admin@sourcecode.dev", password: "admin123", role: "super_admin", name: "Source Code" },
+      { email: "ashwini1achari@gmail.com", password: "admin123", role: "super_admin", name: "Source Code" },
       { email: "editor@sourcecode.dev", password: "editor123", role: "editor", name: "Sarah Borg" },
-      { email: "admin@surftechnology.mt", password: "admin123", role: "super_admin", name: "Source Code" },
       { email: "editor@surftechnology.mt", password: "editor123", role: "editor", name: "Sarah Borg" }
     ]);
   }
@@ -40,7 +39,7 @@ export async function validateToken(token: string | null): Promise<any | null> {
 
   // Fallback checks
   if (token === "admin-token" || token.includes("admin")) {
-    const dbUser = await User.findOne({ email: "admin@sourcecode.dev" }).lean();
+    const dbUser = await User.findOne({ email: "ashwini1achari@gmail.com" }).lean();
     if (dbUser) return { email: dbUser.email, role: dbUser.role, name: dbUser.name };
   }
   if (token === "editor-token" || token.includes("editor")) {

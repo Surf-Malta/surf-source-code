@@ -2,8 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, Mail, Eye, Trash2, Calendar, Loader2, X, ExternalLink, MessageSquare, Building2, TrendingUp, Globe } from "lucide-react";
-import { getRequests, deleteRequest } from "@/lib/data/adminApi";
+import { Search, Mail, MailOpen, Eye, Trash2, Calendar, Loader2, X, ExternalLink, MessageSquare, Building2, TrendingUp, Globe } from "lucide-react";
+import { getRequests, deleteRequest, updateRequestReadStatus } from "@/lib/data/adminApi";
 
 function timeAgo(ts: string): string {
   const diff = Date.now() - new Date(ts).getTime();
@@ -16,10 +16,20 @@ function timeAgo(ts: string): string {
   return `${days}d ago`;
 }
 
+function formatWebsiteUrl(url: string): string {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  return `https://${url}`;
+}
+
 export default function RequestsManagerPage() {
   const [requests, setRequests] = useState<any[]>([]);
   const [search, setSearch] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [showMobileDetail, setShowMobileDetail] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const reload = () => {
@@ -27,7 +37,22 @@ export default function RequestsManagerPage() {
       .then((data) => {
         setRequests(data);
         if (data.length > 0 && !selectedId) {
-          setSelectedId(data[0].id || data[0]._id);
+          const firstId = data[0].id || data[0]._id;
+          setSelectedId(firstId);
+          // Only auto-mark first request as read on load if we are on a desktop screen size (width >= 1024px)
+          if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+            if (!data[0].read) {
+              updateRequestReadStatus(firstId, true)
+                .then(() => {
+                  setRequests((prev) =>
+                    prev.map((r) =>
+                      (r.id || r._id) === firstId ? { ...r, read: true } : r
+                    )
+                  );
+                })
+                .catch((err) => console.error("Error marking first request as read:", err));
+            }
+          }
         }
         setLoading(false);
       })
@@ -39,15 +64,32 @@ export default function RequestsManagerPage() {
 
   useEffect(() => { reload(); }, []);
 
+
+
   const handleDelete = (id: string) => {
-    if (confirm("Archive/Delete this project request?")) {
-      deleteRequest(id).then(() => {
+    deleteRequest(id)
+      .then(() => {
         if (selectedId === id) {
           setSelectedId(null);
         }
         reload();
+      })
+      .catch((err) => {
+        console.error("Archive request error:", err);
+        alert("Failed to archive: " + (err.message || err));
       });
-    }
+  };
+
+  const handleToggleRead = (id: string, currentRead: boolean) => {
+    updateRequestReadStatus(id, !currentRead)
+      .then(() => {
+        setRequests((prev) =>
+          prev.map((r) =>
+            (r.id || r._id) === id ? { ...r, read: !currentRead } : r
+          )
+        );
+      })
+      .catch((err) => console.error("Error toggling read status:", err));
   };
 
   const filtered = requests.filter((r) => {
@@ -101,14 +143,33 @@ export default function RequestsManagerPage() {
                 return (
                   <div
                     key={itemId}
-                    onClick={() => setSelectedId(itemId)}
+                    onClick={() => {
+                      setSelectedId(itemId);
+                      setShowMobileDetail(true);
+                      if (!item.read) {
+                        updateRequestReadStatus(itemId, true)
+                          .then(() => {
+                            setRequests((prev) =>
+                              prev.map((r) =>
+                                (r.id || r._id) === itemId ? { ...r, read: true } : r
+                              )
+                            );
+                          })
+                          .catch((err) => console.error("Error marking request as read:", err));
+                      }
+                    }}
                     className={`p-4 cursor-pointer transition-colors relative flex flex-col gap-1.5 hover:bg-og-surface-hover/30 ${
                       selectedId === itemId ? "bg-og-accent/5 hover:bg-og-accent/5" : ""
                     }`}
                   >
                     {selectedId === itemId && <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-og-accent" />}
                     <div className="flex items-start justify-between gap-2">
-                      <span className="text-[13px] text-og-text truncate font-bold">{item.companyName}</span>
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {!item.read && <span className="w-2 h-2 rounded-full bg-og-accent shrink-0 animate-pulse" />}
+                        <span className={`text-[13px] truncate ${item.read ? "text-og-text-secondary font-medium" : "text-og-text font-bold"}`}>
+                          {item.companyName}
+                        </span>
+                      </div>
                       <span className="text-[10px] text-og-text-secondary/60 font-normal shrink-0 flex items-center gap-1">
                         <Calendar size={10} />
                         {timeAgo(item.createdAt)}
@@ -148,13 +209,44 @@ export default function RequestsManagerPage() {
                       {selected.email}
                     </a>
                   </div>
-                  <button
-                    onClick={() => handleDelete(selected.id || selected._id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-og-destructive/20 text-[12px] text-og-destructive hover:bg-og-destructive/5 cursor-pointer font-medium"
-                  >
-                    <Trash2 size={13} />
-                    Archive Inquiry
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleToggleRead(selected.id || selected._id, selected.read)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-og-border bg-og-surface-hover/50 hover:bg-og-surface-hover text-[12px] text-og-text-secondary cursor-pointer transition-colors font-medium"
+                    >
+                      {selected.read ? (
+                        <>
+                          <Mail size={13} />
+                          Mark as Unread
+                        </>
+                      ) : (
+                        <>
+                          <MailOpen size={13} />
+                          Mark as Read
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => {
+                        const targetId = selected.id || selected._id;
+                        if (confirmDeleteId === targetId) {
+                          handleDelete(targetId);
+                          setConfirmDeleteId(null);
+                        } else {
+                          setConfirmDeleteId(targetId);
+                          setTimeout(() => setConfirmDeleteId(null), 3000);
+                        }
+                      }}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all cursor-pointer font-medium text-[12px] ${
+                        confirmDeleteId === (selected.id || selected._id)
+                          ? "bg-og-destructive border-og-destructive text-white hover:bg-og-destructive/90"
+                          : "border-og-destructive/20 text-og-destructive hover:bg-og-destructive/5"
+                      }`}
+                    >
+                      <Trash2 size={13} />
+                      {confirmDeleteId === (selected.id || selected._id) ? "Confirm Archive?" : "Archive Inquiry"}
+                    </button>
+                  </div>
                 </div>
 
                 {/* Detail Grid */}
@@ -182,7 +274,7 @@ export default function RequestsManagerPage() {
                       <div className="min-w-0">
                         <div className="text-[10px] text-og-text-secondary uppercase tracking-wider font-semibold">Website</div>
                         <a
-                          href={selected.website}
+                          href={formatWebsiteUrl(selected.website)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-[13px] text-og-accent hover:underline flex items-center gap-1 mt-0.5 no-underline truncate font-semibold"
@@ -229,6 +321,138 @@ export default function RequestsManagerPage() {
           </AnimatePresence>
         </div>
       </div>
+
+      {/* Mobile Details Modal Overlay */}
+      <AnimatePresence>
+        {showMobileDetail && selected && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-[#09090F]/80 backdrop-blur-md flex items-center justify-center p-4 lg:hidden"
+            onClick={() => setShowMobileDetail(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, y: 15 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.95, y: 15 }}
+              className="bg-og-surface w-full max-w-[600px] rounded-2xl border border-og-border flex flex-col max-h-[85vh] overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {/* Modal Header */}
+              <div className="flex items-start justify-between border-b border-og-border p-5 shrink-0">
+                <div>
+                  <h2 className="text-[18px] text-og-text tracking-[-0.01em] font-bold">{selected.companyName}</h2>
+                  <a href={`mailto:${selected.email}`} className="text-[13px] text-og-accent hover:underline flex items-center gap-1.5 mt-1 no-underline font-medium">
+                    <Mail size={13} />
+                    {selected.email}
+                  </a>
+                </div>
+                <button
+                  onClick={() => setShowMobileDetail(false)}
+                  className="p-1.5 rounded-lg hover:bg-og-surface-hover text-og-text-secondary transition-colors cursor-pointer"
+                >
+                  <X size={18} />
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="flex-1 overflow-y-auto p-5 space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-og-accent/10 flex items-center justify-center shrink-0"><Building2 size={16} className="text-og-accent" /></div>
+                    <div>
+                      <div className="text-[10px] text-og-text-secondary uppercase tracking-wider font-semibold">Industry</div>
+                      <div className="text-[13px] text-og-text font-bold mt-0.5">{selected.industry}</div>
+                    </div>
+                  </div>
+                  <div className="flex gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-og-accent/10 flex items-center justify-center shrink-0"><TrendingUp size={16} className="text-og-accent" /></div>
+                    <div>
+                      <div className="text-[10px] text-og-text-secondary uppercase tracking-wider font-semibold">Budget Limit</div>
+                      <div className="text-[13px] text-og-text font-bold mt-0.5">{selected.budget || "Not specified"}</div>
+                    </div>
+                  </div>
+                </div>
+
+                {selected.website && (
+                  <div className="flex gap-3">
+                    <div className="w-9 h-9 rounded-lg bg-og-accent/10 flex items-center justify-center shrink-0"><Globe size={16} className="text-og-accent" /></div>
+                    <div className="min-w-0">
+                      <div className="text-[10px] text-og-text-secondary uppercase tracking-wider font-semibold">Website</div>
+                      <a
+                        href={formatWebsiteUrl(selected.website)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-[13px] text-og-accent hover:underline flex items-center gap-1 mt-0.5 no-underline truncate font-semibold"
+                      >
+                        {selected.website}
+                        <ExternalLink size={11} />
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                <div className="h-px bg-og-border" />
+
+                <div>
+                  <div className="text-[10px] text-og-text-secondary uppercase tracking-wider font-semibold mb-2">Requested Service</div>
+                  <span className="inline-block px-3 py-1 rounded-full bg-og-accent/15 text-og-accent text-[12px] font-bold">
+                    {selected.service}
+                  </span>
+                </div>
+
+                {selected.message && (
+                  <div>
+                    <div className="text-[10px] text-og-text-secondary uppercase tracking-wider font-semibold mb-2">Message Detail</div>
+                    <div className="bg-og-surface-hover rounded-xl p-4 border border-og-border text-[13px] text-og-text leading-relaxed font-normal whitespace-pre-wrap">
+                      {selected.message}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="border-t border-og-border p-5 shrink-0 flex items-center justify-between gap-4">
+                <div className="text-[11px] text-og-text-secondary/40 flex items-center gap-1 font-normal">
+                  <Calendar size={11} />
+                  {new Date(selected.createdAt).toLocaleString()}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleToggleRead(selected.id || selected._id, selected.read)}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-og-border bg-og-surface-hover/50 hover:bg-og-surface-hover text-[12px] text-og-text-secondary cursor-pointer transition-colors font-medium"
+                  >
+                    {selected.read ? <Mail size={13} /> : <MailOpen size={13} />}
+                    {selected.read ? "Mark Unread" : "Mark Read"}
+                  </button>
+                  <button
+                    onClick={() => {
+                      const targetId = selected.id || selected._id;
+                      if (confirmDeleteId === targetId) {
+                        handleDelete(targetId);
+                        setConfirmDeleteId(null);
+                        setShowMobileDetail(false);
+                      } else {
+                        setConfirmDeleteId(targetId);
+                        setTimeout(() => setConfirmDeleteId(null), 3000);
+                      }
+                    }}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border transition-all cursor-pointer font-medium text-[12px] ${
+                      confirmDeleteId === (selected.id || selected._id)
+                        ? "bg-og-destructive border-og-destructive text-white hover:bg-og-destructive/90"
+                        : "border-og-destructive/20 text-og-destructive hover:bg-og-destructive/5"
+                    }`}
+                  >
+                    <Trash2 size={13} />
+                    {confirmDeleteId === (selected.id || selected._id) ? "Confirm?" : "Archive"}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

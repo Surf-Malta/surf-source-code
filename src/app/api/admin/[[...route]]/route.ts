@@ -125,9 +125,8 @@ export async function POST(request: Request, props: { params: Promise<{ route?: 
       const userCount = await User.countDocuments();
       if (userCount === 0) {
         await User.create([
-          { email: "admin@surftechnology.mt", password: "admin123", role: "super_admin", name: "Source Code" },
+          { email: "ashwini1achari@gmail.com", password: "admin123", role: "super_admin", name: "Source Code" },
           { email: "editor@surftechnology.mt", password: "editor123", role: "editor", name: "Sarah Borg" },
-          { email: "admin@sourcecode.dev", password: "admin123", role: "super_admin", name: "Source Code" },
           { email: "editor@sourcecode.dev", password: "editor123", role: "editor", name: "Sarah Borg" }
         ]);
       }
@@ -345,7 +344,7 @@ export async function PUT(request: Request, props: { params: Promise<{ route?: s
         if (!homepage) {
           homepage = await Homepage.create(body);
         } else {
-          homepage = await Homepage.findByIdAndUpdate(homepage._id, body, { new: true });
+          homepage = await Homepage.findByIdAndUpdate(homepage._id, body, { returnDocument: "after" });
         }
         await Activity.create({
           action: "Updated",
@@ -411,7 +410,7 @@ export async function PUT(request: Request, props: { params: Promise<{ route?: s
       const id = route[1];
 
       if (endpoint === "blogs") {
-        const updated = await Blog.findByIdAndUpdate(id, body, { new: true });
+        const updated = await Blog.findByIdAndUpdate(id, body, { returnDocument: "after" });
         if (!updated) return NextResponse.json({ error: "Blog not found" }, { status: 404 });
         await Activity.create({
           action: "Updated",
@@ -424,7 +423,7 @@ export async function PUT(request: Request, props: { params: Promise<{ route?: s
       }
 
       if (endpoint === "portfolio") {
-        const updated = await Portfolio.findByIdAndUpdate(id, body, { new: true });
+        const updated = await Portfolio.findByIdAndUpdate(id, body, { returnDocument: "after" });
         if (!updated) return NextResponse.json({ error: "Portfolio item not found" }, { status: 404 });
         await Activity.create({
           action: "Updated",
@@ -437,7 +436,7 @@ export async function PUT(request: Request, props: { params: Promise<{ route?: s
       }
 
       if (endpoint === "faqs") {
-        const updated = await FAQ.findByIdAndUpdate(id, body, { new: true });
+        const updated = await FAQ.findByIdAndUpdate(id, body, { returnDocument: "after" });
         if (!updated) return NextResponse.json({ error: "FAQ not found" }, { status: 404 });
         await Activity.create({
           action: "Updated",
@@ -450,7 +449,7 @@ export async function PUT(request: Request, props: { params: Promise<{ route?: s
       }
 
       if (endpoint === "media") {
-        const updated = await Media.findByIdAndUpdate(id, body, { new: true });
+        const updated = await Media.findByIdAndUpdate(id, body, { returnDocument: "after" });
         if (!updated) return NextResponse.json({ error: "Media not found" }, { status: 404 });
         await Activity.create({
           action: "Updated",
@@ -463,7 +462,7 @@ export async function PUT(request: Request, props: { params: Promise<{ route?: s
       }
 
       if (endpoint === "services") {
-        const updated = await Service.findByIdAndUpdate(id, body, { new: true });
+        const updated = await Service.findByIdAndUpdate(id, body, { returnDocument: "after" });
         if (!updated) return NextResponse.json({ error: "Service not found" }, { status: 404 });
         await Activity.create({
           action: "Updated",
@@ -472,6 +471,12 @@ export async function PUT(request: Request, props: { params: Promise<{ route?: s
           entityTitle: updated.title,
           user: user.name,
         });
+        return NextResponse.json({ data: formatDoc(updated) });
+      }
+
+      if (endpoint === "requests") {
+        const updated = await ProjectSubmission.findByIdAndUpdate(id, body, { returnDocument: "after" });
+        if (!updated) return NextResponse.json({ error: "Request not found" }, { status: 404 });
         return NextResponse.json({ data: formatDoc(updated) });
       }
     }

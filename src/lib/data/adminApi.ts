@@ -456,6 +456,14 @@ export async function deleteRequest(id: string): Promise<void> {
   await apiFetch(`/requests/${id}`, { method: "DELETE" });
 }
 
+export async function updateRequestReadStatus(id: string, read: boolean): Promise<any> {
+  const { data } = await apiFetch<{ data: any }>(`/requests/${id}`, {
+    method: "PUT",
+    body: JSON.stringify({ read }),
+  });
+  return data;
+}
+
 /* ═══════════════════════════════════
    UTILITY
    ═══════════════════════════════════ */
