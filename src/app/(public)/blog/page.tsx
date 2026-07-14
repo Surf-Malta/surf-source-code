@@ -2,6 +2,8 @@ import { BlogContent } from "@/components/blog/BlogContent";
 import { blogPosts as staticBlogPosts } from "@/lib/data/blogPosts";
 import { fetchPublishedBlogs } from "@/lib/data/publicData";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Blog | Sourcecode",
   description: "Insights on software engineering, AI, technology, and building better digital products. Articles by the Sourcecode team.",

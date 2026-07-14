@@ -1,6 +1,8 @@
 import { FAQContent } from "@/components/faq/FAQContent";
 import { fetchActiveFAQs } from "@/lib/data/publicData";
 
+export const dynamic = "force-dynamic";
+
 const staticFaqs = [
   { question: "What services does Sourcecode offer?", answer: "We provide custom software development, AI & automation solutions, web design & development, business intelligence systems, and workflow engineering. From MVPs to enterprise platforms, we build what your business needs.", category: "General" },
   { question: "Where is Sourcecode based?", answer: "We're based in Malta, serving local businesses and international clients. Our team has deep expertise in Malta's key industries including iGaming, financial services, and corporate services.", category: "General" },

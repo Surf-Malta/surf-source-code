@@ -7,6 +7,8 @@ import { ImageWithFallback } from "@/components/ImageWithFallback";
 import dbConnect from "@/lib/mongodb";
 import Blog from "@/lib/models/Blog";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
 }
